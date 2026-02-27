@@ -6,13 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Charts Page</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="app.js" defer></script>
-
 </head>
 
 <body>
     <h1>Charts Page</h1>
     <nav id="menu"></nav>
+    
+    <div class="export-buttons">
+        <button onclick="exportToPDF()" class="btn-export">Export to PDF</button>
+        <button onclick="exportToCSV()" class="btn-export">Export to CSV</button>
+    </div>
+    
+    <div class="charts-container">
+        <div class="chart-wrapper">
+            <h2>Expenses by Category</h2>
+            <canvas id="pieChart"></canvas>
+        </div>
+        
+        <div class="chart-wrapper">
+            <h2>Expenses by Month</h2>
+            <canvas id="histogramChart"></canvas>
+        </div>
+    </div>
 </body>
 
 </html>

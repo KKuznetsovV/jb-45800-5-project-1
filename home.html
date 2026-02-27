@@ -23,12 +23,12 @@
             <option value="Other">Other</option>
         </select>
 
-        <div id="otherExpanse" style="display: none;">
+        <div id="otherExpanse" class="hidden">
             <label for="otherReason">Please specify:</label>
-            <input type="text" id="otherReason">
+            <input type="text" id="otherReason" placeholder="Enter reason for 'Other' expanse">
         </div>
 
-        <textarea id="description" placeholder="Enter description"></textarea>
+        <textarea id="description" placeholder="Enter description" required></textarea>
         <input type="number" id="amount" placeholder="Enter amount" required min="0" max="100000">
         <input type="date" id="date" required>
         <button type="submit" id="submitExpanseButton">Add Expanse</button>
