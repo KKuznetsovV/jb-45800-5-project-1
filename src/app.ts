@@ -1,7 +1,8 @@
 const LOCAL_STORAGE_KEY = 'expenses'
-let currentEditingId = null
-const $ = (id) => document.getElementById(id)
-loadMenu = () => {  
+let currentEditingId: number | null = null
+const $ = (id: string): HTMLElement | null => document.getElementById(id)
+
+const loadMenu = (): void => {  
     const menu = $('menu')
     if (!menu) return
     menu.innerHTML = `
@@ -14,10 +15,20 @@ loadMenu = () => {
     `
 }
 
-const saveExpanse = (expanseTable) =>
+interface Expense {
+    id: number
+    typeOfExpanse: string
+    description: string
+    amount: string
+    date: string
+}
+
+const saveExpanse = (expanseTable: Expense[]): void =>
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(expanseTable))
-const getData = () => JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || []
-const withData = (mutator) => {
+
+const getData = (): Expense[] => JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]')
+
+const withData = (mutator: (data: Expense[]) => void): Expense[] => {
     const data = getData()
     mutator(data)
     saveExpanse(data)
@@ -25,17 +36,18 @@ const withData = (mutator) => {
     return data
 }
 
-
-const syncDataToDOM = () => {
+const syncDataToDOM = (): void => {
     const data = getData()
     let didNormalize = false
     const baseId = Date.now()
-    for (let i = 0; i < data.length; i++) {
-        if (data[i].id == null) {
-            data[i].id = baseId + i
+    
+    data.forEach((item, i) => {
+        if (item.id == null) {
+            item.id = baseId + i
             didNormalize = true
         }
-    }
+    })
+    
     if (didNormalize) saveExpanse(data)
 
     const htmlString = data.map((expanse, index) => `
@@ -50,37 +62,57 @@ const syncDataToDOM = () => {
                 </td>
             </tr>
         `).join('')
-    $('expanseTable').innerHTML = htmlString
-    $('total').textContent = data.length
-    $('averagePrice').textContent = getExpanseAverage().toFixed(2)
+    
+    const expanseTable = $('expanseTable')
+    if (expanseTable) expanseTable.innerHTML = htmlString
+    
+    const totalElement = $('total')
+    if (totalElement) totalElement.textContent = String(data.length)
+    
+    const avgElement = $('averagePrice')
+    if (avgElement) avgElement.textContent = getExpanseAverage().toFixed(2)
 }
 
-const getExpanseAverage = () => {
+const getExpanseAverage = (): number => {
     const data = getData()
     const sum = data.reduce((total, expanse) => total + Number(expanse.amount), 0)
     return data.length ? sum / data.length : 0
 }
 
-const resetFormState = () => {
-    $('newExpanseForm')?.reset()
+const setOtherReasonState = (show: boolean, value: string = ''): void => {
+    const otherReasonWrapper = $('otherExpanse')
+    const otherReasonInput = $('otherReason') as HTMLInputElement | null
+    if (!otherReasonWrapper || !otherReasonInput) return
+    otherReasonWrapper.classList.toggle('hidden', !show)
+    otherReasonInput.toggleAttribute('required', show)
+    otherReasonInput.value = show ? value : ''
+}
+
+const resetFormState = (): void => {
+    const form = $('newExpanseForm') as HTMLFormElement | null
+    form?.reset()
     currentEditingId = null
     const submitButton = $('submitExpanseButton')
     if (submitButton) submitButton.textContent = 'Add Expanse'
     setOtherReasonState(false)
 }
 
-function addExpanse(event) {
-
+const addExpanse = (event: Event): void => {
     event.preventDefault()
 
-    const typeSelect = $('typeOfExpanse')
-    const otherReason = $('otherReason')?.value || ''
+    const typeSelect = $('typeOfExpanse') as HTMLSelectElement | null
+    const otherReasonInput = $('otherReason') as HTMLInputElement | null
+    const otherReason = otherReasonInput?.value || ''
     let typeOfExpanse = typeSelect?.value || ''
     if (typeOfExpanse === 'Other' && otherReason.trim()) typeOfExpanse = otherReason
 
-    const description = $('description').value
-    const amount = $('amount').value
-    const date = $('date').value
+    const descriptionInput = $('description') as HTMLInputElement
+    const amountInput = $('amount') as HTMLInputElement
+    const dateInput = $('date') as HTMLInputElement
+    
+    const description = descriptionInput.value
+    const amount = amountInput.value
+    const date = dateInput.value
 
     withData((expanse) => {
         if (currentEditingId !== null) {
@@ -99,21 +131,23 @@ function addExpanse(event) {
 
     resetFormState()
 }
-const deleteExpanse = (expanseId) => {
+
+const deleteExpanse = (expanseId: number): void => {
     if (!confirm('Are you sure you want to delete this expanse?')) return
     withData((expanse) => {
         const index = expanse.findIndex((item) => item.id === expanseId)
         if (index !== -1) expanse.splice(index, 1)
     })
 }
-const updateExpanse = (expanseId) => {
+
+const updateExpanse = (expanseId: number): void => {
     const expanse = getData().find(e => e.id === expanseId)
     if (expanse) {
         currentEditingId = expanseId
         const submitButton = $('submitExpanseButton')
         if (submitButton) submitButton.textContent = 'Update Expanse'
 
-        const typeSelect = $('typeOfExpanse')
+        const typeSelect = $('typeOfExpanse') as HTMLSelectElement | null
         if (typeSelect) {
             const isPresetType = Array.from(typeSelect.options).some(
                 option => option.value === expanse.typeOfExpanse
@@ -126,14 +160,21 @@ const updateExpanse = (expanseId) => {
                 setOtherReasonState(true, expanse.typeOfExpanse)
             }
         }
-        $('description').value = expanse.description
-        $('amount').value = expanse.amount
-        $('date').value = expanse.date
+        
+        const descriptionInput = $('description') as HTMLInputElement
+        const amountInput = $('amount') as HTMLInputElement
+        const dateInput = $('date') as HTMLInputElement
+        
+        descriptionInput.value = expanse.description
+        amountInput.value = expanse.amount
+        dateInput.value = expanse.date
 
-        $('newExpanseForm').scrollIntoView({ behavior: 'smooth' })
+        const form = $('newExpanseForm') as HTMLElement
+        form?.scrollIntoView({ behavior: 'smooth' })
     }
 }
-const renderFilteredTable = (data) => {
+
+const renderFilteredTable = (data: Expense[]): void => {
     const table = $('filteredExpanseTable')
     if (!table) return
     if (!data.length) {
@@ -154,11 +195,16 @@ const renderFilteredTable = (data) => {
     `).join('')
 }
 
-const filter = (event) => {
+const filter = (event: Event): void => {
     event.preventDefault()
-    const yearValue = $('filterByYear')?.value
-    const monthValue = $('filterByMonth')?.value
-    const dayValue = $('filterByDate')?.value
+    
+    const yearInput = $('filterByYear') as HTMLInputElement | null
+    const monthInput = $('filterByMonth') as HTMLInputElement | null
+    const dayInput = $('filterByDate') as HTMLInputElement | null
+    
+    const yearValue = yearInput?.value
+    const monthValue = monthInput?.value
+    const dayValue = dayInput?.value
 
     if (dayValue && (!yearValue || !monthValue)) {
         alert('Please enter a year and month before filtering by date.')
@@ -191,71 +237,63 @@ const filter = (event) => {
     if (resultsTable) resultsTable.classList.remove('hidden')
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadMenu()
-    if ($('expanseTable')) syncDataToDOM()
+(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+        loadMenu()
+        if ($('expanseTable')) syncDataToDOM()
 
-    document
-        .querySelector('#newExpanseForm button[type="reset"]')
-        ?.addEventListener('click', resetFormState)
+        const resetButton = document.querySelector('#newExpanseForm button[type="reset"]')
+        resetButton?.addEventListener('click', resetFormState)
 
-    if ($('filteredExpanseTable')) {
-        $('dateFilterForm')?.addEventListener('reset', () => {
-            const resultsTable = $('expanseResultsTable')
-            if (resultsTable) resultsTable.classList.add('hidden')
-        })
-    }
-})
-
-const reasonSelect = $('typeOfExpanse')
-const otherReasonInput = $('otherReason')
-const otherReasonWrapper = $('otherExpanse')
-
-const setOtherReasonState = (show, value = '') => {
-    if (!otherReasonWrapper || !otherReasonInput) return
-    otherReasonWrapper.classList.toggle('hidden', !show)
-    otherReasonInput.toggleAttribute('required', show)
-    otherReasonInput.value = show ? value : ''
-}
-
-reasonSelect?.addEventListener('change', () => {
-    setOtherReasonState(reasonSelect.value === 'Other')
-})
-
-const dateInput = document.getElementById('date');
-if (dateInput) {
-    const today = new Date().toISOString().split('T')[0]
-    dateInput.max = today
-}
-
-const filterByYear = document.getElementById('filterByYear')
-if (filterByYear) {
-    const currentYear = new Date().getFullYear()
-    filterByYear.max = currentYear
-    getData().forEach(expanse => {
-        const expanseYear = new Date(expanse.date).getFullYear()
-        if (expanseYear > currentYear) {
-            expanse.date = `${currentYear}-12-31`
+        if ($('filteredExpanseTable')) {
+            const dateFilterForm = $('dateFilterForm')
+            dateFilterForm?.addEventListener('reset', () => {
+                const resultsTable = $('expanseResultsTable')
+                if (resultsTable) resultsTable.classList.add('hidden')
+            })
         }
     })
-}
 
-// Charts functionality
-let pieChartInstance = null
-let histogramChartInstance = null
+    const reasonSelect = $('typeOfExpanse') as HTMLSelectElement | null
 
-const initializeCharts = () => {
+    reasonSelect?.addEventListener('change', () => {
+        setOtherReasonState(reasonSelect.value === 'Other')
+    })
+
+    const dateInput = document.getElementById('date') as HTMLInputElement | null
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0]
+        dateInput.max = today
+    }
+
+    const filterByYear = document.getElementById('filterByYear') as HTMLInputElement | null
+    if (filterByYear) {
+        const currentYear = new Date().getFullYear()
+        filterByYear.max = String(currentYear)
+        getData().forEach(expanse => {
+            const expanseYear = new Date(expanse.date).getFullYear()
+            if (expanseYear > currentYear) {
+                expanse.date = `${currentYear}-12-31`
+            }
+        })
+    }
+})()
+
+let pieChartInstance: any = null
+let histogramChartInstance: any = null
+
+const initializeCharts = (): void => {
     const data = getData()
     if (!data.length) return
     createPieChart(data)
     createHistogramChart(data)
 }
 
-const createPieChart = (data) => {
-    const canvas = $('pieChart')
+const createPieChart = (data: Expense[]): void => {
+    const canvas = $('pieChart') as HTMLCanvasElement | null
     if (!canvas) return
     
-    const categoryData = data.reduce((acc, exp) => {
+    const categoryData = data.reduce((acc: Record<string, number>, exp) => {
         const cat = exp.typeOfExpanse || 'Unknown'
         acc[cat] = (acc[cat] || 0) + Number(exp.amount)
         return acc
@@ -263,7 +301,7 @@ const createPieChart = (data) => {
     
     if (pieChartInstance) pieChartInstance.destroy()
     
-    pieChartInstance = new Chart(canvas, {
+    pieChartInstance = new (window as any).Chart(canvas, {
         type: 'pie',
         data: {
             labels: Object.keys(categoryData),
@@ -279,8 +317,8 @@ const createPieChart = (data) => {
                 legend: { position: 'bottom' },
                 tooltip: {
                     callbacks: {
-                        label: (ctx) => {
-                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0)
+                        label: (ctx: any) => {
+                            const total = ctx.dataset.data.reduce((a: number, b: number) => a + b, 0)
                             const pct = ((ctx.parsed / total) * 100).toFixed(1)
                             return `${ctx.label}: $${ctx.parsed.toFixed(2)} (${pct}%)`
                         }
@@ -291,11 +329,11 @@ const createPieChart = (data) => {
     })
 }
 
-const createHistogramChart = (data) => {
-    const canvas = $('histogramChart')
+const createHistogramChart = (data: Expense[]): void => {
+    const canvas = $('histogramChart') as HTMLCanvasElement | null
     if (!canvas) return
     
-    const monthData = data.reduce((acc, exp) => {
+    const monthData = data.reduce((acc: Record<string, number>, exp) => {
         if (!exp.date) return acc
         const date = new Date(exp.date)
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
@@ -307,7 +345,7 @@ const createHistogramChart = (data) => {
     
     if (histogramChartInstance) histogramChartInstance.destroy()
     
-    histogramChartInstance = new Chart(canvas, {
+    histogramChartInstance = new (window as any).Chart(canvas, {
         type: 'bar',
         data: {
             labels: sorted.map(m => m.split('-').reverse().join('/')),
@@ -321,22 +359,22 @@ const createHistogramChart = (data) => {
         },
         options: {
             responsive: true,
-            scales: { y: { beginAtZero: true, ticks: { callback: (val) => '$' + val } } },
+            scales: { y: { beginAtZero: true, ticks: { callback: (val: any) => '$' + val } } },
             plugins: {
                 legend: { display: false },
-                tooltip: { callbacks: { label: (ctx) => 'Total: $' + ctx.parsed.y.toFixed(2) } }
+                tooltip: { callbacks: { label: (ctx: any) => 'Total: $' + ctx.parsed.y.toFixed(2) } }
             }
         }
     })
 }
 
-const generateColors = (count) => 
+const generateColors = (count: number): string[] => 
     Array.from({ length: count }, () => {
         const [r, g, b] = Array(3).fill(0).map(() => Math.floor(Math.random() * 255))
         return `rgba(${r}, ${g}, ${b}, 0.7)`
     })
 
-const exportToCSV = () => {
+const exportToCSV = (): void => {
     const data = getData()
     if (!data.length) return alert('No data to export')
     
@@ -352,11 +390,11 @@ const exportToCSV = () => {
     document.body.removeChild(link)
 }
 
-const exportToPDF = () => {
+const exportToPDF = (): void => {
     const data = getData()
     if (!data.length) return alert('No data to export')
     
-    const { jsPDF } = window.jspdf
+    const { jsPDF } = (window as any).jspdf
     const doc = new jsPDF()
     const total = data.reduce((sum, e) => sum + Number(e.amount), 0)
     
@@ -369,7 +407,7 @@ const exportToPDF = () => {
     doc.autoTable({
         startY: 50,
         head: [['Type', 'Description', 'Amount', 'Date']],
-        body: data.map(e => [e.typeOfExpanse || '', e.description || '', `$${Number(e.amount).toFixed(2)}`, e.date || '']),
+        body: data.map((e: Expense) => [e.typeOfExpanse || '', e.description || '', `$${Number(e.amount).toFixed(2)}`, e.date || '']),
         theme: 'striped',
         headStyles: { fillColor: [54, 162, 235] }
     })
@@ -377,5 +415,15 @@ const exportToPDF = () => {
     doc.save(`expenses_${new Date().toISOString().split('T')[0]}.pdf`)
 }
 
+(() => {
+    if ($('pieChart') && $('histogramChart')) {
+        document.addEventListener('DOMContentLoaded', initializeCharts)
+    }
+})();
 
-if ($('pieChart') && $('histogramChart')) document.addEventListener('DOMContentLoaded', initializeCharts)
+(window as any).deleteExpanse = deleteExpanse;
+(window as any).updateExpanse = updateExpanse;
+(window as any).addExpanse = addExpanse;
+(window as any).filter = filter;
+(window as any).exportToCSV = exportToCSV;
+(window as any).exportToPDF = exportToPDF;
