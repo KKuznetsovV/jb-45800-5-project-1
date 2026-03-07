@@ -26,7 +26,7 @@ interface Expense {
 const saveExpanse = (expanseTable: Expense[]): void =>
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(expanseTable))
 
-const getData = (): Expense[] => JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]')
+const getData = (): Expense[] => JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) ?? '[]')
 
 const withData = (mutator: (data: Expense[]) => void): Expense[] => {
     const data = getData()
@@ -102,8 +102,8 @@ const addExpanse = (event: Event): void => {
 
     const typeSelect = $('typeOfExpanse') as HTMLSelectElement | null
     const otherReasonInput = $('otherReason') as HTMLInputElement | null
-    const otherReason = otherReasonInput?.value || ''
-    let typeOfExpanse = typeSelect?.value || ''
+    const otherReason = otherReasonInput?.value ?? ''
+    let typeOfExpanse = typeSelect?.value ?? ''
     if (typeOfExpanse === 'Other' && otherReason.trim()) typeOfExpanse = otherReason
 
     const descriptionInput = $('description') as HTMLInputElement
@@ -293,11 +293,13 @@ const createPieChart = (data: Expense[]): void => {
     const canvas = $('pieChart') as HTMLCanvasElement | null
     if (!canvas) return
     
-    const categoryData = data.reduce((acc: Record<string, number>, exp) => {
-        const cat = exp.typeOfExpanse || 'Unknown'
-        acc[cat] = (acc[cat] || 0) + Number(exp.amount)
-        return acc
-    }, {})
+    const grouped = Object.groupBy(data, (exp) => exp.typeOfExpanse || 'Unknown')
+    const categoryData = Object.fromEntries(
+        Object.entries(grouped).map(([cat, expenses]) => [
+            cat,
+            expenses!.reduce((sum, exp) => sum + Number(exp.amount), 0)
+        ])
+    )
     
     if (pieChartInstance) pieChartInstance.destroy()
     
@@ -333,15 +335,19 @@ const createHistogramChart = (data: Expense[]): void => {
     const canvas = $('histogramChart') as HTMLCanvasElement | null
     if (!canvas) return
     
-    const monthData = data.reduce((acc: Record<string, number>, exp) => {
-        if (!exp.date) return acc
+    const dataWithDates = data.filter(exp => exp.date)
+    const grouped = Object.groupBy(dataWithDates, (exp) => {
         const date = new Date(exp.date)
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-        acc[key] = (acc[key] || 0) + Number(exp.amount)
-        return acc
-    }, {})
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    })
+    const monthData = Object.fromEntries(
+        Object.entries(grouped).map(([key, expenses]) => [
+            key,
+            expenses!.reduce((sum, exp) => sum + Number(exp.amount), 0)
+        ])
+    )
     
-    const sorted = Object.keys(monthData).sort()
+    const sorted = Object.keys(monthData).toSorted()
     
     if (histogramChartInstance) histogramChartInstance.destroy()
     
