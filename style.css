@@ -82,7 +82,7 @@ h1 {
 }
 
 /* Form Styling */
-#newExpanseForm {
+#newexpenseForm {
     max-width: 600px;
     margin: 0 auto 40px;
     background: white;
@@ -241,7 +241,7 @@ h1 {
 
 
 
-#typeOfExpanse,
+#typeOfexpense,
 #description,
 #amount,
 #date,
@@ -254,7 +254,7 @@ h1 {
     transition: all 0.3s ease;
 }
 
-#typeOfExpanse:focus,
+#typeOfexpense:focus,
 #description:focus,
 #amount:focus,
 #date:focus,
@@ -265,7 +265,7 @@ h1 {
     background-color: #f9f9ff;
 }
 
-#typeOfExpanse {
+#typeOfexpense {
     cursor: pointer;
 }
 
@@ -275,15 +275,15 @@ h1 {
     font-family: Arial, sans-serif;
 }
 
-/* Other Expanse Wrapper */
-#otherExpanse {
+/* Other expense Wrapper */
+#otherexpense {
     padding: 15px;
     background-color: #f5f1e8;
     border-left: 4px solid #667eea;
     border-radius: 6px;
 }
 
-#otherExpanse label {
+#otherexpense label {
     display: block;
     margin-bottom: 8px;
     color: #2c3e50;
@@ -304,26 +304,26 @@ button {
     letter-spacing: 0.5px;
 }
 
-#newExpanseForm button[type="submit"] {
+#newexpenseForm button[type="submit"] {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
 
-#newExpanseForm button[type="submit"]:hover {
+#newexpenseForm button[type="submit"]:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
 }
 
-#newExpanseForm button[type="submit"]:active {
+#newexpenseForm button[type="submit"]:active {
     transform: translateY(0);
 }
 
-#newExpanseForm button[type="reset"] {
+#newexpenseForm button[type="reset"] {
     background-color: #e0e0e0;
     color: #2c3e50;
 }
 
-#newExpanseForm button[type="reset"]:hover {
+#newexpenseForm button[type="reset"]:hover {
     background-color: #d0d0d0;
     transform: translateY(-2px);
 }

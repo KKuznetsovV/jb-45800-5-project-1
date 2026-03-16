@@ -1,9 +1,11 @@
 "use strict";
 const LOCAL_STORAGE_KEY = 'expenses';
 let currentEditingId = null;
-const $ = (id) => document.getElementById(id);
-const loadMenu = () => {
-    const menu = $('menu');
+function getElement(id) {
+    return document.getElementById(id);
+}
+function loadMenu() {
+    const menu = getElement('menu');
     if (!menu)
         return;
     menu.innerHTML = `
@@ -14,17 +16,21 @@ const loadMenu = () => {
             <li><a href="about.html">About</a></li>
         </ul>
     `;
-};
-const saveExpanse = (expanseTable) => localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(expanseTable));
-const getData = () => JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
-const withData = (mutator) => {
+}
+function saveexpense(expenseTable) {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(expenseTable));
+}
+function getData() {
+    return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) ?? '[]');
+}
+function withData(mutator) {
     const data = getData();
     mutator(data);
-    saveExpanse(data);
+    saveexpense(data);
     syncDataToDOM();
     return data;
-};
-const syncDataToDOM = () => {
+}
+function syncDataToDOM() {
     const data = getData();
     let didNormalize = false;
     const baseId = Date.now();
@@ -35,71 +41,71 @@ const syncDataToDOM = () => {
         }
     });
     if (didNormalize)
-        saveExpanse(data);
-    const htmlString = data.map((expanse, index) => `
+        saveexpense(data);
+    const htmlString = data.map((expense, index) => `
             <tr data-index="${index}">
-                <td>${expanse.typeOfExpanse}</td>
-                <td>${expanse.description}</td>
-                <td>$${expanse.amount}</td>
-                <td>${expanse.date}</td>
+                <td>${expense.typeOfexpense}</td>
+                <td>${expense.description}</td>
+                <td>$${expense.amount}</td>
+                <td>${expense.date}</td>
                 <td>
-                    <button onclick="deleteExpanse(${expanse.id})" class="deleteButton">delete</button>
-                    <button onclick="updateExpanse(${expanse.id})" class="updateButton">update</button>
+                    <button onclick="deleteexpense(${expense.id})" class="deleteButton">delete</button>
+                    <button onclick="updateexpense(${expense.id})" class="updateButton">update</button>
                 </td>
             </tr>
         `).join('');
-    const expanseTable = $('expanseTable');
-    if (expanseTable)
-        expanseTable.innerHTML = htmlString;
-    const totalElement = $('total');
+    const expenseTable = getElement('expenseTable');
+    if (expenseTable)
+        expenseTable.innerHTML = htmlString;
+    const totalElement = getElement('total');
     if (totalElement)
         totalElement.textContent = String(data.length);
-    const avgElement = $('averagePrice');
+    const avgElement = getElement('averagePrice');
     if (avgElement)
-        avgElement.textContent = getExpanseAverage().toFixed(2);
-};
-const getExpanseAverage = () => {
+        avgElement.textContent = getexpenseAverage().toFixed(2);
+}
+function getexpenseAverage() {
     const data = getData();
-    const sum = data.reduce((total, expanse) => total + Number(expanse.amount), 0);
+    const sum = data.reduce((total, expense) => total + Number(expense.amount), 0);
     return data.length ? sum / data.length : 0;
-};
-const setOtherReasonState = (show, value = '') => {
-    const otherReasonWrapper = $('otherExpanse');
-    const otherReasonInput = $('otherReason');
+}
+function setOtherReasonState(isShow, value = '') {
+    const otherReasonWrapper = getElement('otherexpense');
+    const otherReasonInput = getElement('otherReason');
     if (!otherReasonWrapper || !otherReasonInput)
         return;
-    otherReasonWrapper.classList.toggle('hidden', !show);
-    otherReasonInput.toggleAttribute('required', show);
-    otherReasonInput.value = show ? value : '';
-};
-const resetFormState = () => {
-    const form = $('newExpanseForm');
-    form === null || form === void 0 ? void 0 : form.reset();
+    otherReasonWrapper.classList.toggle('hidden', !isShow);
+    otherReasonInput.toggleAttribute('required', isShow);
+    otherReasonInput.value = isShow ? value : '';
+}
+function resetFormState() {
+    const form = getElement('newexpenseForm');
+    form?.reset();
     currentEditingId = null;
-    const submitButton = $('submitExpanseButton');
+    const submitButton = getElement('submitexpenseButton');
     if (submitButton)
-        submitButton.textContent = 'Add Expanse';
+        submitButton.textContent = 'Add expense';
     setOtherReasonState(false);
-};
-const addExpanse = (event) => {
+}
+function addexpense(event) {
     event.preventDefault();
-    const typeSelect = $('typeOfExpanse');
-    const otherReasonInput = $('otherReason');
-    const otherReason = (otherReasonInput === null || otherReasonInput === void 0 ? void 0 : otherReasonInput.value) || '';
-    let typeOfExpanse = (typeSelect === null || typeSelect === void 0 ? void 0 : typeSelect.value) || '';
-    if (typeOfExpanse === 'Other' && otherReason.trim())
-        typeOfExpanse = otherReason;
-    const descriptionInput = $('description');
-    const amountInput = $('amount');
-    const dateInput = $('date');
+    const typeSelect = getElement('typeOfexpense');
+    const otherReasonInput = getElement('otherReason');
+    const otherReason = otherReasonInput?.value ?? '';
+    let typeOfexpense = typeSelect?.value ?? '';
+    if (typeOfexpense === 'Other' && otherReason.trim())
+        typeOfexpense = otherReason;
+    const descriptionInput = getElement('description');
+    const amountInput = getElement('amount');
+    const dateInput = getElement('date');
     const description = descriptionInput.value;
     const amount = amountInput.value;
     const date = dateInput.value;
-    withData((expanse) => {
+    withData((expense) => {
         if (currentEditingId !== null) {
-            const target = expanse.find((item) => item.id === currentEditingId);
+            const target = expense.find((item) => item.id === currentEditingId);
             if (target) {
-                target.typeOfExpanse = typeOfExpanse;
+                target.typeOfexpense = typeOfexpense;
                 target.description = description;
                 target.amount = amount;
                 target.date = date;
@@ -107,77 +113,77 @@ const addExpanse = (event) => {
             currentEditingId = null;
             return;
         }
-        expanse.push({ id: Date.now(), typeOfExpanse, description, amount, date });
+        expense.push({ id: Date.now(), typeOfexpense, description, amount, date });
     });
     resetFormState();
-};
-const deleteExpanse = (expanseId) => {
-    if (!confirm('Are you sure you want to delete this expanse?'))
+}
+function deleteexpense(expenseId) {
+    if (!confirm('Are you sure you want to delete this expense?'))
         return;
-    withData((expanse) => {
-        const index = expanse.findIndex((item) => item.id === expanseId);
+    withData((expense) => {
+        const index = expense.findIndex((item) => item.id === expenseId);
         if (index !== -1)
-            expanse.splice(index, 1);
+            expense.splice(index, 1);
     });
-};
-const updateExpanse = (expanseId) => {
-    const expanse = getData().find(e => e.id === expanseId);
-    if (expanse) {
-        currentEditingId = expanseId;
-        const submitButton = $('submitExpanseButton');
+}
+function updateexpense(expenseId) {
+    const expense = getData().find(e => e.id === expenseId);
+    if (expense) {
+        currentEditingId = expenseId;
+        const submitButton = getElement('submitexpenseButton');
         if (submitButton)
-            submitButton.textContent = 'Update Expanse';
-        const typeSelect = $('typeOfExpanse');
+            submitButton.textContent = 'Update expense';
+        const typeSelect = getElement('typeOfexpense');
         if (typeSelect) {
-            const isPresetType = Array.from(typeSelect.options).some(option => option.value === expanse.typeOfExpanse);
+            const isPresetType = Array.from(typeSelect.options).some(option => option.value === expense.typeOfexpense);
             if (isPresetType) {
-                typeSelect.value = expanse.typeOfExpanse;
+                typeSelect.value = expense.typeOfexpense;
                 setOtherReasonState(false);
             }
             else {
                 typeSelect.value = 'Other';
-                setOtherReasonState(true, expanse.typeOfExpanse);
+                setOtherReasonState(true, expense.typeOfexpense);
             }
         }
-        const descriptionInput = $('description');
-        const amountInput = $('amount');
-        const dateInput = $('date');
-        descriptionInput.value = expanse.description;
-        amountInput.value = expanse.amount;
-        dateInput.value = expanse.date;
-        const form = $('newExpanseForm');
-        form === null || form === void 0 ? void 0 : form.scrollIntoView({ behavior: 'smooth' });
+        const descriptionInput = getElement('description');
+        const amountInput = getElement('amount');
+        const dateInput = getElement('date');
+        descriptionInput.value = expense.description;
+        amountInput.value = expense.amount;
+        dateInput.value = expense.date;
+        const form = getElement('newexpenseForm');
+        form?.scrollIntoView({ behavior: 'smooth' });
     }
-};
-const renderFilteredTable = (data) => {
-    const table = $('filteredExpanseTable');
+}
+function renderFilteredTable(data) {
+    const table = getElement('filteredexpenseTable');
     if (!table)
         return;
     if (!data.length) {
         table.innerHTML = `
             <tr>
-                <td colspan="4">There are no expanses found for selected period</td>
+                <td colspan="4">There are no expenses found for selected period</td>
             </tr>
         `;
         return;
     }
-    table.innerHTML = data.map((expanse) => `
+    table.innerHTML = data.map((expense) => `
         <tr>
-            <td>${expanse.typeOfExpanse}</td>
-            <td>${expanse.description}</td>
-            <td>$${expanse.amount}</td>
-            <td>${expanse.date}</td>
+            <td>${expense.typeOfexpense}</td>
+            <td>${expense.description}</td>
+            <td>$${expense.amount}</td>
+            <td>${expense.date}</td>
         </tr>
     `).join('');
-};
-const filter = (event) => {
+}
+function filter(event) {
     event.preventDefault();
-    const yearInput = $('filterByYear');
-    const monthInput = $('filterByMonth');
-    const dayInput = $('filterByDate');
-    const yearValue = yearInput === null || yearInput === void 0 ? void 0 : yearInput.value;
-    const monthValue = monthInput === null || monthInput === void 0 ? void 0 : monthInput.value;
-    const dayValue = dayInput === null || dayInput === void 0 ? void 0 : dayInput.value;
+    const yearInput = getElement('filterByYear');
+    const monthInput = getElement('filterByMonth');
+    const dayInput = getElement('filterByDate');
+    const yearValue = yearInput?.value;
+    const monthValue = monthInput?.value;
+    const dayValue = dayInput?.value;
     if (dayValue && (!yearValue || !monthValue)) {
         alert('Please enter a year and month before filtering by date.');
         return;
@@ -193,75 +199,71 @@ const filter = (event) => {
     const year = Number(yearValue);
     const month = monthValue ? Number(monthValue) : null;
     const day = dayValue ? Number(dayValue) : null;
-    const filtered = getData().filter((expanse) => {
-        if (!expanse.date)
+    const filtered = getData().filter((expense) => {
+        if (!expense.date)
             return false;
-        const date = new Date(expanse.date);
+        const date = new Date(expense.date);
         const matchesYear = date.getFullYear() === year;
         const matchesMonth = month ? date.getMonth() + 1 === month : true;
         const matchesDay = day ? date.getDate() === day : true;
         return matchesYear && matchesMonth && matchesDay;
     });
     renderFilteredTable(filtered);
-    const resultsTable = $('expanseResultsTable');
+    const resultsTable = getElement('expenseResultsTable');
     if (resultsTable)
         resultsTable.classList.remove('hidden');
-};
-(() => {
-    document.addEventListener('DOMContentLoaded', () => {
-        loadMenu();
-        if ($('expanseTable'))
-            syncDataToDOM();
-        const resetButton = document.querySelector('#newExpanseForm button[type="reset"]');
-        resetButton === null || resetButton === void 0 ? void 0 : resetButton.addEventListener('click', resetFormState);
-        if ($('filteredExpanseTable')) {
-            const dateFilterForm = $('dateFilterForm');
-            dateFilterForm === null || dateFilterForm === void 0 ? void 0 : dateFilterForm.addEventListener('reset', () => {
-                const resultsTable = $('expanseResultsTable');
-                if (resultsTable)
-                    resultsTable.classList.add('hidden');
-            });
+}
+loadMenu();
+if (getElement('expenseTable'))
+    syncDataToDOM();
+const resetButton = document.querySelector('#newexpenseForm button[type="reset"]');
+resetButton?.addEventListener('click', resetFormState);
+if (getElement('filteredexpenseTable')) {
+    const dateFilterForm = getElement('dateFilterForm');
+    dateFilterForm?.addEventListener('reset', () => {
+        const resultsTable = getElement('expenseResultsTable');
+        if (resultsTable)
+            resultsTable.classList.add('hidden');
+    });
+}
+const reasonSelect = getElement('typeOfexpense');
+reasonSelect?.addEventListener('change', () => {
+    setOtherReasonState(reasonSelect.value === 'Other');
+});
+const dateInput = document.getElementById('date');
+if (dateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.max = today;
+}
+const filterByYear = document.getElementById('filterByYear');
+if (filterByYear) {
+    const currentYear = new Date().getFullYear();
+    filterByYear.max = String(currentYear);
+    getData().forEach(expense => {
+        const expenseYear = new Date(expense.date).getFullYear();
+        if (expenseYear > currentYear) {
+            expense.date = `${currentYear}-12-31`;
         }
     });
-    const reasonSelect = $('typeOfExpanse');
-    reasonSelect === null || reasonSelect === void 0 ? void 0 : reasonSelect.addEventListener('change', () => {
-        setOtherReasonState(reasonSelect.value === 'Other');
-    });
-    const dateInput = document.getElementById('date');
-    if (dateInput) {
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.max = today;
-    }
-    const filterByYear = document.getElementById('filterByYear');
-    if (filterByYear) {
-        const currentYear = new Date().getFullYear();
-        filterByYear.max = String(currentYear);
-        getData().forEach(expanse => {
-            const expanseYear = new Date(expanse.date).getFullYear();
-            if (expanseYear > currentYear) {
-                expanse.date = `${currentYear}-12-31`;
-            }
-        });
-    }
-})();
+}
 let pieChartInstance = null;
 let histogramChartInstance = null;
-const initializeCharts = () => {
+function initializeCharts() {
     const data = getData();
     if (!data.length)
         return;
     createPieChart(data);
     createHistogramChart(data);
-};
-const createPieChart = (data) => {
-    const canvas = $('pieChart');
+}
+function createPieChart(data) {
+    const canvas = getElement('pieChart');
     if (!canvas)
         return;
-    const categoryData = data.reduce((acc, exp) => {
-        const cat = exp.typeOfExpanse || 'Unknown';
-        acc[cat] = (acc[cat] || 0) + Number(exp.amount);
-        return acc;
-    }, {});
+    const grouped = Object.groupBy(data, (exp) => exp.typeOfexpense || 'Unknown');
+    const categoryData = Object.fromEntries(Object.entries(grouped).map(([cat, expenses]) => [
+        cat,
+        expenses.reduce((sum, exp) => sum + Number(exp.amount), 0)
+    ]));
     if (pieChartInstance)
         pieChartInstance.destroy();
     pieChartInstance = new window.Chart(canvas, {
@@ -290,20 +292,21 @@ const createPieChart = (data) => {
             }
         }
     });
-};
-const createHistogramChart = (data) => {
-    const canvas = $('histogramChart');
+}
+function createHistogramChart(data) {
+    const canvas = getElement('histogramChart');
     if (!canvas)
         return;
-    const monthData = data.reduce((acc, exp) => {
-        if (!exp.date)
-            return acc;
+    const dataWithDates = data.filter(exp => exp.date);
+    const grouped = Object.groupBy(dataWithDates, (exp) => {
         const date = new Date(exp.date);
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        acc[key] = (acc[key] || 0) + Number(exp.amount);
-        return acc;
-    }, {});
-    const sorted = Object.keys(monthData).sort();
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    });
+    const monthData = Object.fromEntries(Object.entries(grouped).map(([key, expenses]) => [
+        key,
+        expenses.reduce((sum, exp) => sum + Number(exp.amount), 0)
+    ]));
+    const sorted = Object.keys(monthData).toSorted();
     if (histogramChartInstance)
         histogramChartInstance.destroy();
     histogramChartInstance = new window.Chart(canvas, {
@@ -327,17 +330,19 @@ const createHistogramChart = (data) => {
             }
         }
     });
-};
-const generateColors = (count) => Array.from({ length: count }, () => {
-    const [r, g, b] = Array(3).fill(0).map(() => Math.floor(Math.random() * 255));
-    return `rgba(${r}, ${g}, ${b}, 0.7)`;
-});
-const exportToCSV = () => {
+}
+function generateColors(count) {
+    return Array.from({ length: count }, () => {
+        const [r, g, b] = Array(3).fill(0).map(() => Math.floor(Math.random() * 255));
+        return `rgba(${r}, ${g}, ${b}, 0.7)`;
+    });
+}
+function exportToCSV() {
     const data = getData();
     if (!data.length)
         return alert('No data to export');
     const rows = [['Type of Expense', 'Description', 'Amount', 'Date']];
-    data.forEach(e => rows.push([`"${e.typeOfExpanse || ''}"`, `"${e.description || ''}"`, e.amount || '0', e.date || '']));
+    data.forEach(e => rows.push([`"${e.typeOfexpense || ''}"`, `"${e.description || ''}"`, e.amount || '0', e.date || '']));
     const link = document.createElement('a');
     link.href = URL.createObjectURL(new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' }));
     link.download = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
@@ -345,8 +350,8 @@ const exportToCSV = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-};
-const exportToPDF = () => {
+}
+function exportToPDF() {
     const data = getData();
     if (!data.length)
         return alert('No data to export');
@@ -361,20 +366,23 @@ const exportToPDF = () => {
     doc.autoTable({
         startY: 50,
         head: [['Type', 'Description', 'Amount', 'Date']],
-        body: data.map((e) => [e.typeOfExpanse || '', e.description || '', `$${Number(e.amount).toFixed(2)}`, e.date || '']),
+        body: data.map((e) => [e.typeOfexpense || '', e.description || '', `$${Number(e.amount).toFixed(2)}`, e.date || '']),
         theme: 'striped',
         headStyles: { fillColor: [54, 162, 235] }
     });
     doc.save(`expenses_${new Date().toISOString().split('T')[0]}.pdf`);
-};
-(() => {
-    if ($('pieChart') && $('histogramChart')) {
-        document.addEventListener('DOMContentLoaded', initializeCharts);
-    }
-})();
-window.deleteExpanse = deleteExpanse;
-window.updateExpanse = updateExpanse;
-window.addExpanse = addExpanse;
+}
+if (getElement('pieChart') && getElement('histogramChart'))
+    initializeCharts();
+;
+window.deleteexpense = deleteexpense;
+;
+window.updateexpense = updateexpense;
+;
+window.addexpense = addexpense;
+;
 window.filter = filter;
+;
 window.exportToCSV = exportToCSV;
+;
 window.exportToPDF = exportToPDF;

@@ -13,9 +13,9 @@
     <h1>Home Page</h1>
     <nav id="menu"></nav>
 
-    <form id="newExpanseForm" onsubmit="addExpanse(event)">
-        <select id="typeOfExpanse" aria-placeholder="Select Type of Expanse" required>
-            <option disabled selected value="">Select Type of Expanse</option>
+    <form id="newexpenseForm" onsubmit="addexpense(event)">
+        <select id="typeOfexpense" aria-placeholder="Select Type of expense" required>
+            <option disabled selected value="">Select Type of expense</option>
             <option value="Food">Food</option>
             <option value="Transport">Transport</option>
             <option value="Entertainment">Entertainment</option>
@@ -23,34 +23,34 @@
             <option value="Other">Other</option>
         </select>
 
-        <div id="otherExpanse" class="hidden">
+        <div id="otherexpense" class="hidden">
             <label for="otherReason">Please specify:</label>
-            <input type="text" id="otherReason" placeholder="Enter reason for 'Other' expanse">
+            <input type="text" id="otherReason" placeholder="Enter reason for 'Other' expense">
         </div>
 
         <textarea id="description" placeholder="Enter description" required></textarea>
         <input type="number" id="amount" placeholder="Enter amount" required min="0" max="100000">
         <input type="date" id="date" required>
-        <button type="submit" id="submitExpanseButton">Add Expanse</button>
+        <button type="submit" id="submitexpenseButton">Add expense</button>
         <button type="reset">Reset</button>
     </form>
     <table>
         <thead>
             <tr>
-                <th>Type of Expanse</th>
+                <th>Type of expense</th>
                 <th>Description</th>
                 <th>Amount</th>
                 <th>Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody id="expanseTable">
+        <tbody id="expenseTable">
 
         </tbody>
     </table>
-    <section class="summary-bar" aria-label="Expanse summary">
-        <div class="summary-card"><span class="summary-label">Total number of expanses</span><span class="summary-value" id="total">0</span></div>
-        <div class="summary-card"><span class="summary-label">Average expanse amount</span><span class="summary-value" id="averagePrice">0.00</span></div>
+    <section class="summary-bar" aria-label="expense summary">
+        <div class="summary-card"><span class="summary-label">Total number of expenses</span><span class="summary-value" id="total">0</span></div>
+        <div class="summary-card"><span class="summary-label">Average expense amount</span><span class="summary-value" id="averagePrice">0.00</span></div>
     </section>
 </body>
 
